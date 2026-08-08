@@ -1,0 +1,2707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ========================================== -->
+    <!-- ADDED SECURITY HEADERS & META TAGS         -->
+    <!-- ========================================== -->
+    <!-- Content Security Policy: Restricts sources for scripts, styles, and images to prevent XSS -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src * data: blob:;">
+    <!-- Prevent MIME type sniffing (Stops browsers from loading malicious files as scripts) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <!-- Prevent Clickjacking by restricting other sites from framing your tool -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <!-- Secure referrer information -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <!-- ========================================== -->
+
+    <title>RD | Resume Builder | Professional CV Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Added html2canvas for JPEG Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --editor-bg: #0b0f19;
+            --sidebar-bg: #111827;
+            --input-bg: #1e293b66;
+            --accent-blue: #0ea5e9;
+            --text-gray: #94a3b8;
+            --border-color: #334155;
+            --preview-blue: #1e40af;
+            --modal-bg: #111827;
+            --card-bg: #1e293b33;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--editor-bg);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- WRAPPING ANIMATIONS --- */
+        .animate-wrap {
+            animation: wrapReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes wrapReveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .editor-panel { animation-delay: 0.1s; }
+        .preview-panel { animation-delay: 0.3s; }
+
+        /* --- TOP NAVIGATION --- */
+        header {
+            height: 60px;
+            background: #0f172a;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            background: var(--accent-blue);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        #burger-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .top-tools {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* --- ZOOM CONTROLS --- */
+        .zoom-group {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 12px;
+            gap: 12px;
+        }
+        
+        .zoom-group span {
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            min-width: 35px;
+            text-align: center;
+        }
+        
+        .z-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        
+        .z-btn:hover {
+            color: white;
+        }
+        
+        .z-divider {
+            width: 1px;
+            height: 16px;
+            background: var(--border-color);
+        }
+
+        .tool-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .tool-btn i { font-size: 14px; color: var(--accent-blue); }
+        .tool-btn:hover { background: #1e293b; color: white; border-color: var(--accent-blue); }
+        .btn-blue { background: var(--accent-blue); color: white; border: none; font-weight: 600; padding: 8px 18px; }
+        .btn-blue i { color: white; }
+
+        .btn-outline-blue {
+            border: 1px solid rgba(14, 165, 233, 0.4);
+            color: var(--accent-blue);
+            font-weight: 600;
+            background: rgba(14, 165, 233, 0.05);
+        }
+        .btn-outline-blue:hover {
+            background: rgba(14, 165, 233, 0.15);
+            border-color: var(--accent-blue);
+        }
+
+        .live-badge-pill {
+            background: transparent;
+            border: 1px solid rgba(14, 165, 233, 0.4);
+            color: var(--accent-blue);
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-left: 10px;
+            font-weight: 500;
+        }
+
+        /* --- MOBILE SIDEBAR NAV --- */
+        #mobile-sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: var(--sidebar-bg);
+            z-index: 1001;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+        }
+
+        #mobile-sidebar.active { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
+
+        #sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+        }
+        #sidebar-overlay.active { display: block; }
+
+        .sidebar-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: var(--text-gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .sidebar-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .sidebar-item.active { background: rgba(14, 165, 233, 0.1); color: var(--accent-blue); font-weight: 600; }
+        
+        .sidebar-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            margin: 15px 0 5px 15px;
+            font-weight: 700;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-container {
+            display: grid;
+            grid-template-columns: 550px 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* --- EDITOR SIDEBAR --- */
+        .editor-panel {
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .editor-header {
+            margin-bottom: 25px;
+        }
+
+        .editor-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .editor-header h2 { 
+            font-size: 19px; 
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+        }
+
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            padding: 5px 0;
+        }
+
+        .tab-item {
+            padding: 10px 16px;
+            color: var(--text-gray);
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .tab-item i { font-size: 14px; }
+
+        .tab-item:hover {
+            color: white;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab-item.active {
+            color: var(--accent-blue);
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* Profile Upload Area */
+        .profile-upload-card {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .preview-box-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--accent-blue);
+            background: #000;
+        }
+
+        #profile-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Form Grid */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group.full-width { grid-column: span 2; }
+        
+        label { font-size: 12px; color: var(--text-gray); font-weight: 500; }
+        
+        input, textarea {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+        }
+
+        textarea { height: 120px; resize: none; }
+        
+        #in-summary { 
+            padding: 12px; 
+            line-height: 1.5;
+            min-height: 140px;
+        }
+        
+        input:focus, textarea:focus { outline: none; border-color: var(--accent-blue); }
+        .header-edit-input::placeholder { color: rgba(255,255,255,0.4); font-weight: 500; }
+
+        /* --- CARD STYLES --- */
+        .section-intro-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+        
+        .experience-card, .data-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .card-top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .card-label { font-size: 14px; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; flex: 1; }
+        .card-label i { color: var(--accent-blue); }
+
+        /* --- NEW EDITABLE HEADER STYLE --- */
+        .header-edit-input {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            color: white !important;
+            width: 100%;
+            cursor: pointer;
+        }
+        .header-edit-input:hover { color: var(--accent-blue) !important; }
+        .header-edit-input:focus { color: white !important; outline: none !important; cursor: text; }
+        
+        .action-icons { display: flex; gap: 12px; color: var(--text-gray); font-size: 14px; }
+        .action-icons i { cursor: pointer; }
+        .action-icons i:hover { color: white; }
+        .icon-delete:hover { color: #ef4444 !important; }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: white;
+            margin: 15px 0;
+        }
+
+        .checkbox-group input { width: auto; cursor: pointer; accent-color: var(--accent-blue); }
+
+        .bullet-point-item {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            align-items: flex-start;
+        }
+
+        .bullet-marker { color: var(--accent-blue); font-size: 16px; margin-top: 8px; }
+        
+        .bullet-input-box {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 15px;
+            color: white;
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 45px;
+        }
+        
+        .action-verb-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-verb-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-color: var(--text-gray);
+        }
+
+        /* --- SKILLS STYLES --- */
+        .skill-tag-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .skill-input-wrapper {
+            background: var(--editor-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .skill-input-wrapper input { background: transparent; border: none; padding: 0; width: 85%; }
+
+        /* --- PREVIEW AREA --- */
+        .preview-panel {
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .canvas-header {
+            width: 210mm;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+
+        .a4-paper {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top center;
+        }
+
+        .resume-sidebar {
+            background: var(--preview-blue);
+            color: white;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .resume-photo-container {
+            width: 150px;
+            height: 150px;
+            border: 4px solid white;
+            margin-bottom: 20px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .resume-photo { width: 100%; height: 100%; object-fit: cover; }
+        .sidebar-name { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 5px; }
+        .sidebar-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; text-align: center; opacity: 0.8; margin-bottom: 30px;}
+        .sidebar-section { width: 100%; margin-bottom: 25px; }
+        .sidebar-section h3 { font-size: 11px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px; margin-bottom: 10px; }
+        .contact-info { font-size: 11px; display: flex; flex-direction: column; gap: 8px; }
+        .skill-tag-pill { background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 4px; font-size: 10px; margin-bottom: 5px; display: inline-block; margin-right: 5px; }
+
+        .resume-main { padding: 40px; }
+        .main-header h1 { font-size: 32px; font-weight: 800; color: var(--preview-blue); }
+        .main-header p { font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 20px; }
+        .resume-content-section { margin-bottom: 25px; }
+        .section-label { 
+            color: var(--preview-blue); 
+            font-size: 12px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .summary-text { font-size: 12px; line-height: 1.6; color: #475569; }
+
+        .preview-item { margin-bottom: 20px; }
+        .prev-item-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+        .prev-item-sub { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 8px; }
+        .prev-bullets { font-size: 11px; color: #475569; padding-left: 15px; }
+
+        /* --- BUTTON CLICK ANIMATIONS --- */
+        button, .tool-btn, .z-btn, .shape-btn, .btn-blue, .btn-use, .btn-active, .preset-card, .action-verb-btn, .tab-item, .sidebar-item {
+            transition: all 0.2s ease !important;
+        }
+        button:active, .tool-btn:active, .z-btn:active, .shape-btn:active, .btn-blue:active, .btn-use:active, .btn-active:active, .preset-card:active, .action-verb-btn:active, .tab-item:active, .sidebar-item:active {
+            transform: scale(0.93) !important;
+            transition: transform 0.1s ease !important;
+        }
+
+        /* --- TEMPLATE CSS --- */
+        /* Template 1: Modern (Default) */
+        .a4-paper.template-modern {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+        }
+
+        /* Template 2: Classic Corporate */
+        .a4-paper.template-classic {
+            display: flex;
+            flex-direction: column;
+        }
+        .a4-paper.template-classic .resume-sidebar {
+            background: white;
+            color: #1e293b;
+            padding: 40px 40px 20px;
+            width: 100%;
+        }
+        .a4-paper.template-classic .resume-photo-container { border-color: #1e293b; }
+        .a4-paper.template-classic .sidebar-name, .a4-paper.template-classic .sidebar-title { color: #1e293b; }
+        .a4-paper.template-classic .contact-info {
+            flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 15px;
+            border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;
+            padding: 10px 0; margin-top: 15px;
+        }
+        .a4-paper.template-classic .sidebar-section h3 { display: none; }
+        .a4-paper.template-classic #sidebar-skills-preview {
+            display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; width: 100%;
+        }
+        .a4-paper.template-classic .skill-tag-pill { background: #e2e8f0; color: #1e293b; }
+        .a4-paper.template-classic .resume-main { padding: 10px 40px 40px; }
+        .a4-paper.template-classic .main-header { display: none; }
+
+        /* Template 3: Minimalist Creative */
+        .a4-paper.template-minimal {
+            display: block;
+            padding: 40px;
+        }
+        .a4-paper.template-minimal .resume-sidebar {
+            background: transparent; color: #1e293b; padding: 0; align-items: flex-start;
+            width: 100%; position: relative; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px;
+        }
+        .a4-paper.template-minimal .resume-photo-container {
+            position: absolute; right: 0; top: 0; border: 1px solid #cbd5e1; width: 100px; height: 100px;
+        }
+        .a4-paper.template-minimal .sidebar-name { font-size: 28px; color: #0f172a; text-align: left; }
+        .a4-paper.template-minimal .sidebar-title { font-size: 14px; text-align: left; margin-bottom: 15px; color: #64748b; }
+        .a4-paper.template-minimal .sidebar-section h3 { display: none; }
+        .a4-paper.template-minimal .contact-info {
+            flex-direction: row; flex-wrap: wrap; max-width: 70%; gap: 12px; margin-bottom: 15px;
+        }
+        .a4-paper.template-minimal #sidebar-skills-preview {
+            width: 100%; display: flex; flex-wrap: wrap; gap: 15px;
+        }
+        .a4-paper.template-minimal .skill-tag-pill { background: #f1f5f9; color: #475569; }
+        .a4-paper.template-minimal .resume-main { padding: 0; }
+        .a4-paper.template-minimal .main-header { display: none; }
+        .a4-paper.template-minimal .section-label { color: #0f172a; border-bottom: none; font-size: 14px; font-weight: 800; }
+
+        /* Template 4: Tech & Developer */
+        .a4-paper.template-technical {
+            display: grid; grid-template-columns: 240px 1fr;
+        }
+        .a4-paper.template-technical .resume-sidebar {
+            background: #f8fafc; color: #1e293b; padding: 30px 20px; border-right: 1px solid #e2e8f0;
+        }
+        .a4-paper.template-technical .resume-photo-container {
+            border: 3px solid #cbd5e1; border-radius: 8px !important;
+        }
+        .a4-paper.template-technical .sidebar-name { color: #0f172a; }
+        .a4-paper.template-technical .sidebar-section h3 { color: #3b82f6; border-bottom-color: #cbd5e1; }
+        .a4-paper.template-technical .skill-tag-pill {
+            background: #e0f2fe; color: #0369a1; border-radius: 4px; border: 1px solid #bae6fd;
+        }
+        .a4-paper.template-technical .resume-main { padding: 30px; }
+        .a4-paper.template-technical .main-header { display: none; }
+        .a4-paper.template-technical .section-label { color: #3b82f6; }
+
+        /* Template 5: Elegant Dual-Tone */
+        .a4-paper.template-elegant {
+            display: flex; flex-direction: column;
+        }
+        .a4-paper.template-elegant .resume-sidebar {
+            background: #1e293b; color: white; padding: 40px; width: 100%;
+            display: grid; grid-template-columns: 150px 1fr; gap: 30px; align-items: center;
+        }
+        .a4-paper.template-elegant .resume-photo-container { margin: 0; grid-row: span 2; border: 2px solid #64748b; }
+        .a4-paper.template-elegant .sidebar-name { text-align: left; font-size: 28px; margin: 0; }
+        .a4-paper.template-elegant .sidebar-title { text-align: left; margin: 0 0 10px 0; color: #94a3b8; }
+        .a4-paper.template-elegant .sidebar-section { margin: 0; width: 100%; }
+        .a4-paper.template-elegant .sidebar-section h3 { display: none; }
+        .a4-paper.template-elegant .contact-info { flex-direction: row; flex-wrap: wrap; gap: 15px; }
+        .a4-paper.template-elegant #sidebar-skills-preview {
+            grid-column: span 2; display: flex; gap: 20px; margin-top: 20px;
+            border-top: 1px solid #334155; padding-top: 20px; flex-wrap: wrap; width: 100%;
+        }
+        .a4-paper.template-elegant #sidebar-skills-preview h3 { display: block; border-bottom: none; color: #94a3b8; }
+        .a4-paper.template-elegant .resume-main { padding: 30px 40px; }
+        .a4-paper.template-elegant .main-header { display: none; }
+
+        /* Template 6: Compact One-Pager */
+        .a4-paper.template-compact { display: block; padding: 25px; }
+        .a4-paper.template-compact .resume-sidebar {
+            background: transparent; color: #1e293b; padding: 0; flex-direction: row;
+            align-items: center; flex-wrap: wrap; gap: 20px; border-bottom: 2px solid #1e293b;
+            padding-bottom: 15px; margin-bottom: 15px;
+        }
+        .a4-paper.template-compact .resume-photo-container {
+            width: 80px; height: 80px; margin: 0; border: 1px solid #1e293b;
+        }
+        .a4-paper.template-compact .sidebar-name { font-size: 24px; text-align: left; margin: 0; color: #1e293b; }
+        .a4-paper.template-compact .sidebar-title { text-align: left; margin: 0; color: #475569; }
+        .a4-paper.template-compact .sidebar-section { width: auto; margin: 0; flex: 1; display: flex; justify-content: flex-end; }
+        .a4-paper.template-compact .sidebar-section h3 { display: none; }
+        .a4-paper.template-compact .contact-info {
+            flex-direction: row; flex-wrap: wrap; gap: 10px; justify-content: flex-end; font-size: 10px;
+        }
+        .a4-paper.template-compact #sidebar-skills-preview { width: 100%; display: flex; gap: 15px; margin-top: 10px; }
+        .a4-paper.template-compact #sidebar-skills-preview h3 {
+            display: inline-block; margin-right: 5px; font-size: 10px; color: #1e293b;
+            border: none; padding: 0; margin-bottom: 0;
+        }
+        .a4-paper.template-compact .skill-tag-pill {
+            background: #e2e8f0; color: #1e293b; padding: 2px 6px; margin-bottom: 2px;
+        }
+        .a4-paper.template-compact .resume-main { padding: 0; }
+        .a4-paper.template-compact .main-header { display: none; }
+        .a4-paper.template-compact .resume-content-section { margin-bottom: 15px; }
+        .a4-paper.template-compact .section-label { font-size: 11px; margin-bottom: 10px; }
+        .a4-paper.template-compact .preview-item { margin-bottom: 10px; }
+        .a4-paper.template-compact .prev-item-header { font-size: 12px; }
+        .a4-paper.template-compact .prev-item-sub { font-size: 10px; margin-bottom: 4px; }
+        .a4-paper.template-compact .prev-bullets { font-size: 10px; }
+
+        /* Unified skills section width handling for horizontal layouts */
+        .a4-paper.template-classic #sidebar-skills-preview .sidebar-section,
+        .a4-paper.template-minimal #sidebar-skills-preview .sidebar-section,
+        .a4-paper.template-elegant #sidebar-skills-preview .sidebar-section,
+        .a4-paper.template-compact #sidebar-skills-preview .sidebar-section {
+            width: auto;
+            margin-bottom: 0;
+        }
+        
+        /* Template 7: Creative Portfolio */
+        .a4-paper.template-portfolio { display: block; padding: 0; background: #fff; }
+        .a4-paper.template-portfolio .resume-sidebar { background: #fdf2f8; color: #1e293b; padding: 40px; text-align: center; border-bottom: 4px solid #ec4899; }
+        .a4-paper.template-portfolio .resume-photo-container { border-radius: 50% !important; border: 4px solid #ec4899; width: 120px; height: 120px; margin: 0 auto 20px; }
+        .a4-paper.template-portfolio .sidebar-name { color: #831843; font-size: 32px; font-weight: 800; margin-bottom: 5px; }
+        .a4-paper.template-portfolio .sidebar-title { color: #be185d; font-size: 14px; font-weight: 700; margin-bottom: 0;}
+        .a4-paper.template-portfolio .contact-info { flex-direction: row; justify-content: center; flex-wrap: wrap; gap: 15px; margin-top: 15px; color: #475569;}
+        .a4-paper.template-portfolio .sidebar-section { width: 100%; margin-bottom: 0; }
+        .a4-paper.template-portfolio .sidebar-section h3 { display: none; }
+        .a4-paper.template-portfolio #sidebar-skills-preview { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; width: 100%; }
+        .a4-paper.template-portfolio .skill-tag-pill { background: #fbcfe8; color: #9d174d; border-radius: 20px; padding: 6px 12px; margin:0; }
+        .a4-paper.template-portfolio .resume-main { padding: 40px; }
+        .a4-paper.template-portfolio .main-header { display: none; }
+        .a4-paper.template-portfolio .section-label { color: #ec4899; font-size: 16px; font-weight: 800; border-bottom: 2px dashed #fbcfe8; padding-bottom: 8px; margin-bottom: 20px; text-transform: uppercase;}
+
+        /* Template 8: Premium Serif */
+        .a4-paper.template-executive { display: block; padding: 40px; background: #fff; font-family: 'Georgia', serif; }
+        .a4-paper.template-executive * { font-family: 'Georgia', serif; }
+        .a4-paper.template-executive .resume-sidebar { background: transparent; color: #000; padding: 0 0 20px 0; border-bottom: 2px solid #000; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 110px; gap: 20px; align-items: start; }
+        .a4-paper.template-executive .resume-photo-container { width: 110px; height: 110px; border: 1px solid #000; border-radius: 0 !important; margin: 0; grid-column: 2; grid-row: 1 / span 3; justify-self: end; }
+        .a4-paper.template-executive .sidebar-name { font-size: 34px; color: #000; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 5px 0; text-align: left; grid-column: 1; grid-row: 1; align-self: end; }
+        .a4-paper.template-executive .sidebar-title { font-size: 14px; color: #333; margin: 0 0 15px 0; text-align: left; letter-spacing: 1px; grid-column: 1; grid-row: 2; align-self: start; }
+        .a4-paper.template-executive .contact-info { flex-direction: row; flex-wrap: wrap; gap: 15px; font-size: 11px; margin-bottom: 15px; color: #000; }
+        .a4-paper.template-executive .sidebar-section { width: 100%; margin: 0; grid-column: 1; grid-row: 3; align-self: start; }
+        .a4-paper.template-executive .sidebar-section h3 { display: none; }
+        .a4-paper.template-executive #sidebar-skills-preview { grid-column: 1 / span 2; display: flex; flex-wrap: wrap; gap: 10px; width: 100%; border-top: 1px solid #000; padding-top: 15px; margin-top: 5px; }
+        .a4-paper.template-executive .skill-tag-pill { background: transparent; color: #000; border: 1px solid #000; border-radius: 0; margin: 0; padding: 4px 8px; }
+        .a4-paper.template-executive .resume-main { padding: 0; }
+        .a4-paper.template-executive .main-header { display: none; }
+        .a4-paper.template-executive .section-label { color: #000; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #000; margin-bottom: 20px; font-weight: 700; padding-bottom: 5px; }
+        .a4-paper.template-executive .prev-item-header { font-size: 14px; font-weight: 700; color: #000; }
+        .a4-paper.template-executive .prev-item-sub { font-style: italic; color: #444; }
+        .a4-paper.template-executive .summary-text, .a4-paper.template-executive .prev-bullets { color: #333; }
+
+        /* Template 9: Neo-Brutalism */
+        .a4-paper.template-neobrutalism { display: block; padding: 25px; background: #fff; border: 4px solid #000; }
+        .a4-paper.template-neobrutalism .resume-sidebar { background: #facc15; color: #000; padding: 25px; border: 4px solid #000; box-shadow: 6px 6px 0px #000; margin-bottom: 35px; display: grid; grid-template-columns: 120px 1fr; gap: 15px; align-items: start; }
+        .a4-paper.template-neobrutalism .resume-photo-container { border: 4px solid #000; border-radius: 0 !important; box-shadow: 4px 4px 0px #000; margin: 0; width: 120px; height: 120px; grid-column: 1; grid-row: 1 / span 3; justify-self: start; align-self: start; }
+        .a4-paper.template-neobrutalism .sidebar-name { font-size: 32px; font-weight: 800; color: #000; text-transform: uppercase; text-align: left; margin-bottom: 10px; line-height: 1.1; grid-column: 2; grid-row: 1; align-self: end; }
+        .a4-paper.template-neobrutalism .sidebar-title { font-size: 14px; font-weight: 700; color: #000; text-align: left; background: #fff; border: 2px solid #000; display: inline-block; padding: 4px 10px; margin-bottom: 15px; grid-column: 2; grid-row: 2; align-self: start; justify-self: start; }
+        .a4-paper.template-neobrutalism .contact-info { flex-direction: row; flex-wrap: wrap; gap: 15px; font-weight: 600; color: #000; }
+        .a4-paper.template-neobrutalism .sidebar-section { width: 100%; margin: 0; grid-column: 2; grid-row: 3; align-self: start; }
+        .a4-paper.template-neobrutalism .sidebar-section h3 { display: none; }
+        .a4-paper.template-neobrutalism #sidebar-skills-preview { grid-column: 1 / span 2; display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-top: 10px; }
+        .a4-paper.template-neobrutalism .skill-tag-pill { background: #fff; color: #000; border: 2px solid #000; box-shadow: 2px 2px 0px #000; font-weight: 700; border-radius: 0; margin: 0; }
+        .a4-paper.template-neobrutalism .resume-main { padding: 0; }
+        .a4-paper.template-neobrutalism .main-header { display: none; }
+        .a4-paper.template-neobrutalism .resume-content-section { border: 4px solid #000; box-shadow: 6px 6px 0px #000; padding: 25px; margin-bottom: 30px; background: #fff; }
+        .a4-paper.template-neobrutalism .section-label { color: #000; font-size: 18px; font-weight: 800; border-bottom: 4px solid #000; padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; }
+        .a4-paper.template-neobrutalism .prev-item-header { font-size: 15px; font-weight: 800; color: #000; }
+        .a4-paper.template-neobrutalism .prev-item-sub { font-weight: 700; color: #000; margin-bottom: 10px; }
+        .a4-paper.template-neobrutalism .summary-text, .a4-paper.template-neobrutalism .prev-bullets { font-weight: 500; color: #000; }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* --- EXPORT MODAL STYLES --- */
+        #exportModal .modal-content {
+            width: 600px;
+            max-width: 95vw;
+            background: #111827;
+            padding: 0;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        .export-modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .export-title-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .export-icon-box {
+            background: var(--accent-blue);
+            color: black;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .export-modal-title h3 {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .export-modal-title p {
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+        .export-modal-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .export-card {
+            background: #1e293b33;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        .export-card.primary {
+            border-color: rgba(14, 165, 233, 0.4);
+            background: rgba(14, 165, 233, 0.05);
+        }
+        .export-card-col {
+            display: flex;
+            flex-direction: column;
+            background: #1e293b33;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+        }
+        .export-card-row {
+            display: flex;
+            gap: 15px;
+        }
+        .export-info h4 {
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .export-info h4 i {
+            color: var(--accent-blue);
+        }
+        .export-info p {
+            color: var(--text-gray);
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        .btn-export-primary {
+            background: var(--accent-blue);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-export-primary:hover {
+            background: #0284c7;
+            color: white;
+        }
+        .btn-export-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        .btn-export-secondary:hover {
+            background: #334155;
+        }
+        .copy-btn-wrap {
+            margin-top: 0;
+            width: auto;
+        }
+
+        /* --- PHOTO SETTINGS MODAL SPECIFIC STYLES --- */
+        .photo-modal-content {
+            width: 720px;
+            background: #111827;
+            text-align: left;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .photo-modal-header {
+            padding: 20px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .photo-modal-header .title-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon-2x2 {
+            background: var(--accent-blue);
+            color: black;
+            font-weight: 800;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .photo-modal-tabs {
+            display: flex;
+            padding: 0 25px;
+            gap: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .photo-tab {
+            padding: 12px 0;
+            font-size: 13px;
+            color: var(--text-gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid transparent;
+        }
+
+        .photo-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .photo-modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 30px 25px;
+            gap: 40px;
+        }
+
+        /* Live Preview in Modal */
+        .live-preview-box {
+            background: #1e293b66;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .preview-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-gray);
+            margin-bottom: 20px;
+        }
+
+        .crop-container {
+            width: 220px;
+            height: 220px;
+            border: 2px solid var(--accent-blue);
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .crop-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .px-badge {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent-blue);
+            color: black;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* Controls Area */
+        .controls-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Range Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.4);
+        }
+
+        /* Shape Buttons */
+        .shape-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .shape-btn {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .shape-btn.active {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: rgba(14, 165, 233, 0.05);
+        }
+
+        .reset-link {
+            color: var(--text-gray);
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .reset-link:hover { color: white; }
+
+        .photo-modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .close-x {
+            cursor: pointer;
+            color: var(--text-gray);
+            font-size: 20px;
+        }
+        
+        /* --- AVATAR PRESETS --- */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .preset-card {
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            transition: 0.2s;
+        }
+
+        .preset-card:hover {
+            border-color: #334155;
+        }
+
+        .preset-card.active {
+            border-color: var(--accent-blue);
+        }
+
+        .preset-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preset-label {
+            padding: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            text-align: left;
+        }
+
+        .preset-card .check-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent-blue);
+            color: black;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .preset-card.active .check-icon {
+            display: flex;
+        }
+        
+        /* --- UPLOAD CUSTOM PHOTO --- */
+        .upload-drop-zone {
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 50px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* --- TEMPLATE MODAL STYLES --- */
+        #templateModal .modal-content {
+            width: 960px;
+            max-width: 95vw;
+            background: #111827;
+            padding: 0;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        .template-modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .template-modal-title-area {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .template-modal-icon {
+            background: var(--accent-blue);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 16px;
+        }
+        .template-modal-title h3 {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            margin-bottom: 4px;
+        }
+        .template-badge {
+            background: rgba(14, 165, 233, 0.15);
+            color: var(--accent-blue);
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .template-modal-title p {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 30px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .template-card {
+            background: #1e293b33;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: 0.2s;
+        }
+        .template-card:hover {
+            border-color: #475569;
+        }
+        .template-card.active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 1px var(--accent-blue);
+        }
+        .template-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .t-badge {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+        .t-badge.popular { background: rgba(14, 165, 233, 0.1); color: var(--accent-blue); }
+        .t-badge.standard { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
+        .t-badge.minimal { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .t-badge.technical { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .t-badge.modern { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+        .t-badge.dense { background: rgba(217, 70, 239, 0.1); color: #d946ef; }
+        .t-badge.creative { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
+        .t-badge.premium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .t-badge.bold { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .t-included {
+            font-size: 10px;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+        }
+
+        .wireframe-box {
+            background: #0f172a;
+            border-radius: 8px;
+            height: 120px;
+            margin-bottom: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .wf-photo {
+            background: var(--accent-blue);
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 8px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+        .wf-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .wf-line { background: #334155; height: 6px; border-radius: 3px; }
+        .wf-line.med { width: 70%; }
+        .wf-line.long { width: 100%; }
+
+        .t-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+        .t-desc {
+            font-size: 12px;
+            color: var(--text-gray);
+            line-height: 1.5;
+            margin-bottom: 12px;
+            flex: 1;
+        }
+        .t-photo-placement {
+            font-size: 10px;
+            color: var(--accent-blue);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .t-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            margin-top: auto;
+        }
+        .t-target {
+            font-size: 10px;
+            color: var(--text-gray);
+            max-width: 50%;
+            line-height: 1.3;
+        }
+        .btn-use {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-use:hover { background: #334155; }
+        .btn-active {
+            background: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+            color: black;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: default;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 1200px) {
+            #burger-btn { display: block; }
+            .top-tools { display: none; }
+            .main-container { grid-template-columns: 1fr; }
+            .preview-panel { display: none; }
+        }
+
+        @media (max-width: 900px) {
+            .template-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 768px) {
+            .photo-modal-content {
+                width: 95vw !important;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .photo-modal-body {
+                grid-template-columns: 1fr !important;
+                padding: 20px !important;
+                gap: 20px !important;
+            }
+            .photo-modal-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 5px;
+            }
+            .photo-tab {
+                flex-shrink: 0;
+            }
+            .crop-container {
+                width: 180px !important;
+                height: 180px !important;
+            }
+            .live-preview-box {
+                padding: 20px !important;
+            }
+            .photo-modal-header h3 {
+                font-size: 13px !important;
+            }
+            .photo-modal-header p {
+                font-size: 10px !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .template-grid { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            header, .editor-panel, .canvas-header, .modal-overlay, #mobile-sidebar, #burger-btn { display: none !important; }
+            .main-container { display: block; }
+            .preview-panel { padding: 0; background: white; display: block; }
+            .a4-paper { box-shadow: none; width: 100%; height: 100%; margin: 0; transform: scale(1) !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+        // ==========================================
+        // ADDED SECURITY PROVISIONS 
+        // ==========================================
+        
+        // 1. Framebusting (Prevents Clickjacking Attacks)
+        // Ensure no other site can embed this page in a hidden iframe to trick users.
+        if (window.top !== window.self) {
+            window.top.location = window.self.location;
+        }
+
+        // 2. Global Anti-XSS Sanitizer (Prevents HTML Injection)
+        // Automatically strips out malicious tags (< and >) typed into inputs without modifying your original logic.
+        document.addEventListener('input', function(e) {
+            if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                const val = e.target.value;
+                if (val.includes('<') || val.includes('>')) {
+                    e.target.value = val.replace(/[<>]/g, "");
+                }
+            }
+        }, true);
+        // ==========================================
+    </script>
+
+    <div id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+    
+    <nav id="mobile-sidebar">
+        <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 20px; padding: 10px 15px;">
+            <div class="brand-logo" style="width:28px; height:28px;"></div>
+            <strong>RD | Resume Builder</strong>
+        </div>
+
+        <div class="sidebar-label">Editor Sections</div>
+        <div class="sidebar-item active" data-tab="personal" onclick="mobileTabClick(this)"><i class="fas fa-user"></i> Personal & Photo</div>
+        <div class="sidebar-item" data-tab="experience" onclick="mobileTabClick(this)"><i class="fas fa-briefcase"></i> Experience</div>
+        <div class="sidebar-item" data-tab="education" onclick="mobileTabClick(this)"><i class="fas fa-graduation-cap"></i> Education</div>
+        <div class="sidebar-item" data-tab="skills" onclick="mobileTabClick(this)"><i class="fas fa-code"></i> Skills</div>
+        <div class="sidebar-item" data-tab="projects" onclick="mobileTabClick(this)"><i class="fas fa-folder"></i> Projects</div>
+
+        <div class="sidebar-label">Quick Actions & Tools</div>
+        <div class="sidebar-item" onclick="openModal('templateModal'); toggleMobileSidebar();"><i class="fas fa-layer-group"></i> Template: Executive</div>
+        <div class="sidebar-item" onclick="openModal('photoSettingsModal'); toggleMobileSidebar();"><i class="fas fa-camera"></i> 2x2 Photo Settings</div>
+        <div class="sidebar-item" onclick="alert('Opening Job Samples...'); toggleMobileSidebar();"><i class="fas fa-lightbulb"></i> Job Samples</div>
+        <div class="sidebar-item" onclick="openModal('atsModal'); toggleMobileSidebar();"><i class="fas fa-robot"></i> ATS Checker</div>
+        <div class="sidebar-item" onclick="openModal('exportModal'); toggleMobileSidebar();" style="color: var(--accent-blue); font-weight: 700;"><i class="fas fa-file-pdf"></i> Export PDF</div>
+    </nav>
+
+    <header>
+        <div class="brand">
+            <button id="burger-btn" onclick="toggleMobileSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="brand-logo">RD</div>
+            <div>
+                <strong style="font-size: 14px;">RD | Resume Builder</strong>
+                <p style="font-size: 10px; color: var(--text-gray); display: block;">Professional CV Builder</p>
+            </div>
+        </div>
+        
+        <div class="top-tools">
+            <div class="zoom-group">
+                <button class="z-btn" onclick="updateZoom(-10)"><i class="fas fa-search-minus"></i></button>
+                <span id="zoom-percentage">90%</span>
+                <button class="z-btn" onclick="updateZoom(10)"><i class="fas fa-search-plus"></i></button>
+                <div class="z-divider"></div>
+                <button class="z-btn" onclick="toggleFullScreen()"><i id="fs-icon" class="fas fa-expand-arrows-alt"></i></button>
+            </div>
+            <button class="tool-btn" onclick="openModal('templateModal')" title="Templates"><i class="fas fa-columns"></i> Templates</button>
+            <button class="tool-btn" onclick="openModal('photoSettingsModal')" title="Adjust Photo"><i class="fas fa-camera"></i> 2x2 Photo</button>
+            <button class="tool-btn" title="View Samples"><i class="fas fa-lightbulb"></i> Samples</button>
+            <button class="tool-btn" onclick="openModal('atsModal')" title="ATS Score"><i class="fas fa-robot"></i> ATS Check</button>
+            <button class="tool-btn btn-blue" onclick="openModal('exportModal')"><i class="fas fa-print"></i> Export PDF</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Editor Sidebar -->
+        <aside class="editor-panel animate-wrap">
+            <div class="editor-header">
+                <div class="editor-header-top">
+                    <h2>Resume Data Editor <span class="live-badge-pill">Live Sync</span></h2>
+                    <button class="tool-btn btn-outline-blue" onclick="openModal('photoSettingsModal')"><i class="fas fa-camera"></i> 2x2 Photo</button>
+                </div>
+                <p style="font-size: 12px; color: var(--text-gray);">All changes reflect instantly in the 2x2 paper preview</p>
+            </div>
+
+            <div class="tab-nav">
+                <div class="tab-item active" data-tab="personal"><i class="fas fa-user"></i> Personal & Photo</div>
+                <div class="tab-item" data-tab="experience"><i class="fas fa-briefcase"></i> Experience</div>
+                <div class="tab-item" data-tab="education"><i class="fas fa-graduation-cap"></i> Education</div>
+                <div class="tab-item" data-tab="skills"><i class="fas fa-code"></i> Skills</div>
+                <div class="tab-item" data-tab="projects"><i class="fas fa-folder"></i> Projects</div>
+            </div>
+
+            <!-- Tab: Personal -->
+            <div id="personal" class="tab-pane active">
+                <div class="profile-upload-card">
+                    <div class="preview-box-container" id="main-ui-photo-frame">
+                        <img id="profile-preview" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200" alt="Profile">
+                    </div>
+                    <div style="flex: 1;">
+                        <p style="font-size: 13px; font-weight: 600;">2x2 Profile Picture <span style="background:var(--accent-blue); font-size:9px; padding: 1px 4px; border-radius:3px; color: black;">PASSPORT STANDARD</span></p>
+                        <p style="font-size: 11px; color: var(--text-gray); margin-bottom: 10px;">Crop, zoom, adjust positioning or choose stock 2x2 avatars</p>
+                        <button class="tool-btn btn-blue" style="font-size: 11px; padding: 5px 10px;" onclick="openModal('photoSettingsModal')">
+                            <i class="fas fa-edit"></i> Edit 2x2 Photo
+                        </button>
+                        <input type="file" id="imgInput" hidden accept="image/*">
+                    </div>
+                </div>
+                <div class="input-grid">
+                    <div class="form-group"><label>Full Name *</label><input type="text" id="in-name" value="Alexandra Chen" oninput="update()"></div>
+                    <div class="form-group"><label>Job Title / Position *</label><input type="text" id="in-role" value="Senior Software Engineer & Tech Lead" oninput="update()"></div>
+                    <div class="form-group"><label>Email Address</label><input type="email" id="in-email" value="alexandra.chen@devmail.com" oninput="update()"></div>
+                    <div class="form-group"><label>Phone Number</label><input type="text" id="in-phone" value="+1 (555) 382-9104" oninput="update()"></div>
+                    <div class="form-group"><label>Location</label><input type="text" id="in-location" value="San Francisco, CA" oninput="update()"></div>
+                    <div class="form-group"><label>Website</label><input type="text" id="in-web" value="alexandrachen.dev" oninput="update()"></div>
+                    <div class="form-group"><label>LinkedIn</label><input type="text" id="in-linkedin" value="linkedin.com/in/alexandrachen-tech" oninput="update()"></div>
+                    <div class="form-group"><label>GitHub</label><input type="text" id="in-github" value="github.com/alexandrachen" oninput="update()"></div>
+                    <div class="form-group full-width">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                            <input type="text" id="in-sect-sum" class="header-edit-input" style="font-size: 12px !important; color: var(--text-gray) !important; font-weight: 500 !important; width: 100%;" value="Professional Summary" oninput="update()">
+                            <i class="fas fa-pencil-alt" style="color: var(--text-gray); font-size: 10px;"></i>
+                        </div>
+                        <textarea id="in-summary" oninput="update()">Driven Senior Software Engineer with 7+ years of experience architecting high-scalability web systems...</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Experience -->
+            <div id="experience" class="tab-pane">
+                <div class="section-intro-header">
+                    <div style="width: 65%;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <input type="text" id="in-sect-exp" class="header-edit-input" style="font-size: 19px !important; width: 100%;" value="Work Experience" oninput="update()">
+                            <i class="fas fa-pencil-alt" style="color: var(--text-gray); font-size: 12px;"></i>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-gray);">List your relevant work history and impact</p>
+                    </div>
+                    <button class="tool-btn btn-blue" onclick="addExperienceCard()"><i class="fas fa-plus"></i> Add Experience</button>
+                </div>
+                <div id="experience-cards-container"></div>
+            </div>
+
+            <!-- Tab: Education -->
+            <div id="education" class="tab-pane">
+                <div class="section-intro-header">
+                    <div style="width: 65%;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <input type="text" id="in-sect-edu" class="header-edit-input" style="font-size: 19px !important; width: 100%;" value="Education" oninput="update()">
+                            <i class="fas fa-pencil-alt" style="color: var(--text-gray); font-size: 12px;"></i>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-gray);">Degrees and qualifications</p>
+                    </div>
+                    <button class="tool-btn btn-blue" onclick="addEducationCard()"><i class="fas fa-plus"></i> Add Degree</button>
+                </div>
+                <div id="education-cards-container"></div>
+            </div>
+
+            <!-- Tab: Skills -->
+            <div id="skills" class="tab-pane">
+                <div class="section-intro-header">
+                    <div style="width: 65%;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <input type="text" id="in-sect-skills" class="header-edit-input" style="font-size: 19px !important; width: 100%;" value="Skills & Expertise" oninput="update()">
+                            <i class="fas fa-pencil-alt" style="color: var(--text-gray); font-size: 12px;"></i>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-gray);">Group skills into custom categories</p>
+                    </div>
+                    <button class="tool-btn btn-blue" onclick="addSkillCategory()"><i class="fas fa-plus"></i> Add Category</button>
+                </div>
+                <div id="skill-categories-container"></div>
+            </div>
+
+            <!-- Tab: Projects -->
+            <div id="projects" class="tab-pane">
+                <div class="section-intro-header">
+                    <div style="width: 65%;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <input type="text" id="in-sect-proj" class="header-edit-input" style="font-size: 19px !important; width: 100%;" value="Key Projects" oninput="update()">
+                            <i class="fas fa-pencil-alt" style="color: var(--text-gray); font-size: 12px;"></i>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-gray);">Showcase your software or case studies</p>
+                    </div>
+                    <button class="tool-btn btn-blue" onclick="addProjectCard()"><i class="fas fa-plus"></i> Add Project</button>
+                </div>
+                <div id="projects-cards-container"></div>
+            </div>
+
+        </aside>
+
+        <!-- Preview Area -->
+        <main class="preview-panel animate-wrap">
+            <div class="canvas-header">
+                <span><i class="fas fa-circle" style="color:#10b981; font-size: 8px;"></i> A4 Live Paper Canvas</span>
+                <div>
+                    <i class="fas fa-search-minus" style="cursor:pointer;" onclick="updateZoom(-10)"></i> 
+                    <span id="inner-zoom-percentage">90%</span> 
+                    <i class="fas fa-search-plus" style="cursor:pointer;" onclick="updateZoom(10)"></i>
+                </div>
+            </div>
+
+            <div class="a4-paper template-modern">
+                <div class="resume-sidebar">
+                    <div class="resume-photo-container" id="resume-photo-frame"><img id="res-photo" class="resume-photo" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200"></div>
+                    <h2 class="sidebar-name" id="res-name-side">Alexandra Chen</h2>
+                    <p class="sidebar-title" id="res-role-side">Senior Engineer</p>
+                    <div class="sidebar-section">
+                        <h3>Contact</h3>
+                        <div class="contact-info">
+                            <span><i class="fas fa-envelope"></i> <span id="res-email">alexandra.chen@devmail.com</span></span>
+                            <span><i class="fas fa-phone"></i> <span id="res-phone">+1 (555) 382-9104</span></span>
+                            <span><i class="fas fa-map-marker-alt"></i> <span id="res-loc">San Francisco, CA</span></span>
+                            <span><i class="fas fa-globe"></i> <span id="res-web">alexandrachen.dev</span></span>
+                            <span><i class="fab fa-linkedin"></i> <span id="res-linkedin">linkedin.com/in/alexandrachen-tech</span></span>
+                            <span><i class="fab fa-github"></i> <span id="res-github">github.com/alexandrachen</span></span>
+                        </div>
+                    </div>
+                    <div id="sidebar-skills-preview"></div>
+                </div>
+
+                <div class="resume-main">
+                    <div class="main-header"><h1 id="res-name-main">Alexandra Chen</h1><p id="res-role-main">Senior Engineer</p></div>
+                    <div class="resume-content-section">
+                        <div class="section-label" id="res-sect-sum">Professional Summary</div>
+                        <p class="summary-text" id="res-summary"></p>
+                    </div>
+                    <div class="resume-content-section">
+                        <div class="section-label" id="res-sect-exp">Work Experience</div>
+                        <div id="prev-experience-list"></div>
+                    </div>
+                    <div class="resume-content-section">
+                        <div class="section-label" id="res-sect-edu">Education</div>
+                        <div id="prev-education-list"></div>
+                    </div>
+                    <div class="resume-content-section">
+                        <div class="section-label" id="res-sect-proj">Key Projects</div>
+                        <div id="prev-projects-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="atsModal" class="modal-overlay" onclick="closeModal('atsModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <i class="fas fa-robot" style="font-size: 40px; color: var(--accent-blue); margin-bottom: 15px;"></i>
+            <h3>ATS Analysis</h3>
+            <p style="color: var(--text-gray); margin-top:10px;">Scanning for keyword optimization...</p>
+            <button class="tool-btn btn-blue" style="width: 100%; margin-top: 20px;" onclick="closeModal('atsModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- EXPORT MODAL -->
+    <div id="exportModal" class="modal-overlay" onclick="closeModal('exportModal')">
+        <div class="modal-content export-modal-content" onclick="event.stopPropagation()">
+            <div class="export-modal-header">
+                <div class="export-title-area">
+                    <div class="export-icon-box"><i class="fas fa-print"></i></div>
+                    <div class="export-modal-title">
+                        <h3>Export, Print & Save Resume</h3>
+                        <p>High-resolution PDF export, print layout, or backup JSON</p>
+                    </div>
+                </div>
+                <div class="close-x" onclick="closeModal('exportModal')">&times;</div>
+            </div>
+            
+            <div class="export-modal-body">
+                <!-- Print / Save as PDF -->
+                <div class="export-card primary">
+                    <div class="export-info">
+                        <h4><i class="fas fa-print"></i> Print / Save as PDF</h4>
+                        <p>Opens native browser print preview. Choose "Save as PDF" for crisp vector output.</p>
+                    </div>
+                    <button class="btn-export-primary" onclick="window.print(); closeModal('exportModal');">Print Now</button>
+                </div>
+                
+                <!-- Download as JPEG -->
+                <div class="export-card">
+                    <div class="export-info">
+                        <h4><i class="fas fa-image"></i> Download as JPEG</h4>
+                        <p>Export your resume as a high-quality JPEG image file.</p>
+                    </div>
+                    <button class="btn-export-secondary copy-btn-wrap" onclick="exportToJPEG()"><i class="fas fa-download"></i> Save JPEG</button>
+                </div>
+                
+                <!-- JSON Row -->
+                <div class="export-card-row">
+                    <!-- Export JSON -->
+                    <div class="export-card-col">
+                        <div class="export-info">
+                            <h4><i class="fas fa-download"></i> Download JSON Backup</h4>
+                            <p>Save structured resume file to restore anytime.</p>
+                        </div>
+                        <button class="btn-export-secondary">Export JSON</button>
+                    </div>
+                    
+                    <!-- Import JSON -->
+                    <div class="export-card-col">
+                        <div class="export-info">
+                            <h4><i class="fas fa-upload"></i> Restore / Import JSON</h4>
+                            <p>Upload a previously saved .json resume file.</p>
+                        </div>
+                        <button class="btn-export-secondary">Choose JSON</button>
+                    </div>
+                </div>
+
+                <!-- Copy Text -->
+                <div class="export-card">
+                    <div class="export-info">
+                        <h4><i class="fas fa-file-alt"></i> Copy Plain Text Version</h4>
+                        <p>Ideal for pasting into online job application forms.</p>
+                    </div>
+                    <button class="btn-export-secondary copy-btn-wrap"><i class="fas fa-copy"></i> Copy Text</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHOTO SETTINGS MODAL -->
+    <div id="photoSettingsModal" class="modal-overlay" onclick="closeModal('photoSettingsModal')">
+        <div class="modal-content photo-modal-content" onclick="event.stopPropagation()">
+            <div class="photo-modal-header">
+                <div class="title-area">
+                    <span class="icon-2x2">2x2</span>
+                    <div>
+                        <h3 style="font-size: 15px; color: white;">2x2 Passport Photo Settings</h3>
+                        <p style="font-size: 11px; color: var(--text-gray);">Adjust position, zoom, border style, or choose professional 2x2 avatars</p>
+                    </div>
+                </div>
+                <div class="close-x" onclick="closeModal('photoSettingsModal')">&times;</div>
+            </div>
+
+            <div class="photo-modal-tabs">
+                <div class="photo-tab active" onclick="switchPhotoTab('zoom-align', this)"><i class="fas fa-arrows-alt"></i> Zoom & Align</div>
+                <div class="photo-tab" onclick="switchPhotoTab('avatar-presets', this)"><i class="fas fa-sparkles"></i> 2x2 Avatar Presets</div>
+                <div class="photo-tab" onclick="switchPhotoTab('upload-custom', this)"><i class="fas fa-upload"></i> Upload Custom Photo</div>
+            </div>
+
+            <div class="photo-modal-body" id="tab-zoom-align">
+                <div class="live-preview-box">
+                    <div class="preview-label">2" X 2" LIVE PREVIEW</div>
+                    <div class="crop-container" id="modal-crop-frame">
+                        <img id="modal-preview-img" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200">
+                    </div>
+                    <div class="px-badge">600 x 600 px</div>
+                </div>
+
+                <div class="controls-column">
+                    <div class="control-group">
+                        <div class="control-header">
+                            <span><i class="fas fa-search-plus" style="color:var(--accent-blue)"></i> Photo Zoom</span>
+                            <span id="zoom-val">100%</span>
+                        </div>
+                        <input type="range" id="range-zoom" min="100" max="250" value="100" oninput="applyPhotoSettings()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">Horizontal Position (X)</div>
+                        <input type="range" id="range-x" min="-50" max="50" value="0" oninput="applyPhotoSettings()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">Vertical Position (Y)</div>
+                        <input type="range" id="range-y" min="-50" max="50" value="0" oninput="applyPhotoSettings()">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-header">Frame Corner Shape</div>
+                        <div class="shape-selector">
+                            <button class="shape-btn active" onclick="setShape('0%', this)">Square</button>
+                            <button class="shape-btn" onclick="setShape('15px', this)">Rounded</button>
+                            <button class="shape-btn" onclick="setShape('50%', this)">Circle</button>
+                        </div>
+                    </div>
+
+                    <div class="reset-link" onclick="resetPhotoSettings()"><i class="fas fa-undo"></i> Reset Zoom & Align</div>
+                </div>
+            </div>
+            
+            <div id="tab-avatar-presets" style="display: none; padding: 25px 25px 30px;">
+                <p style="font-size: 12px; color: var(--text-gray); margin-bottom: 15px;">Select a high-resolution professional 2x2 headshot preset for instant resume formatting:</p>
+                <div class="preset-grid">
+                    <div class="preset-card active" onclick="selectPreset(this, 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200')">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200" alt="Female Executive 1">
+                        <div class="preset-label">Female Executive 1</div>
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="preset-card" onclick="selectPreset(this, 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200')">
+                        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200" alt="Male Corporate 1">
+                        <div class="preset-label">Male Corporate 1</div>
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="preset-card" onclick="selectPreset(this, 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200')">
+                        <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200" alt="Female Professional 2">
+                        <div class="preset-label">Female Professional 2</div>
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="preset-card" onclick="selectPreset(this, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200')">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200" alt="Male Creative 2">
+                        <div class="preset-label">Male Creative 2</div>
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="preset-card" onclick="selectPreset(this, 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200')">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" alt="Tech Specialist">
+                        <div class="preset-label">Tech Specialist</div>
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="preset-card" onclick="selectPreset(this, 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200')">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200" alt="Project Director">
+                        <div class="preset-label">Project Director</div>
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tab-upload-custom" style="display: none; padding: 25px 25px 30px;">
+                <div class="upload-drop-zone">
+                    <i class="fas fa-upload" style="font-size: 32px; color: var(--accent-blue); margin-bottom: 15px;"></i>
+                    <h4 style="font-size: 15px; color: white; margin-bottom: 8px;">Upload Your 2x2 Profile Picture</h4>
+                    <p style="font-size: 11px; color: var(--text-gray); margin-bottom: 20px;">PNG, JPG, or WEBP images work best. Square or passport photos recommended.</p>
+                    <button class="btn-blue" style="font-size: 12px; padding: 10px 20px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="document.getElementById('imgInput').click()">
+                        <i class="fas fa-image"></i> Choose File from Device
+                    </button>
+                </div>
+                
+                <div style="margin-top: 25px;">
+                    <label style="font-size: 11px; font-weight: 700; color: white; margin-bottom: 10px; display: block;">Or Paste Direct Image Web URL</label>
+                    <input type="text" id="custom-image-url" placeholder="https://..." value="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600&h=600" style="width: 100%; background: transparent; border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; color: white; font-size: 12px;" onchange="loadCustomImageUrl(this.value)">
+                </div>
+            </div>
+
+            <div class="photo-modal-footer">
+                <button class="tool-btn btn-blue" onclick="closeModal('photoSettingsModal')">Save 2x2 Photo Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TEMPLATE MODAL -->
+    <div id="templateModal" class="modal-overlay" onclick="closeModal('templateModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="template-modal-header">
+                <div class="template-modal-title-area">
+                    <div class="template-modal-icon"><i class="fas fa-layer-group"></i></div>
+                    <div class="template-modal-title">
+                        <h3>Choose 2x2 Photo Resume Template <span class="template-badge">9 Professional Designs</span></h3>
+                        <p>All templates feature standard 2" x 2" passport photo placement and clean typography</p>
+                    </div>
+                </div>
+                <div class="close-x" onclick="closeModal('templateModal')">&times;</div>
+            </div>
+            <div class="template-grid">
+                <!-- Card 1 -->
+                <div class="template-card active">
+                    <div class="template-card-header">
+                        <span class="t-badge popular">POPULAR</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="wf-photo">2x2</div>
+                            <div class="wf-lines" style="justify-content: center; width: 60px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                        </div>
+                        <div class="wf-lines">
+                            <div class="wf-line long"></div>
+                            <div class="wf-line long"></div>
+                            <div class="wf-line med"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Modern Executive</div>
+                    <div class="t-desc">Distinctive dark sidebar layout featuring a high-impact 2x2 photo framing personal details.</div>
+                    <div class="t-photo-placement">Top-left 2x2 Photo Card on dark sidebar canvas</div>
+                    <div class="t-footer">
+                        <span class="t-target">Engineers</span>
+                        <button class="btn-active" onclick="selectTemplate('template-modern', this)"><i class="fas fa-check"></i> Active Template</button>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge standard">STANDARD</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="wf-photo">2x2</div>
+                            <div class="wf-lines" style="justify-content: center; width: 60px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                        </div>
+                        <div class="wf-lines">
+                            <div class="wf-line long"></div>
+                            <div class="wf-line long"></div>
+                            <div class="wf-line med"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Classic Corporate</div>
+                    <div class="t-desc">Traditional centered header layout with a prominent 2x2 photo, crisp divider rules, and clean typography.</div>
+                    <div class="t-photo-placement">Centered 2x2 Photo in top header block</div>
+                    <div class="t-footer">
+                        <span class="t-target">Corporate</span>
+                        <button class="btn-use" onclick="selectTemplate('template-classic', this)">Use Template</button>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge minimal">MINIMAL</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="wf-photo">2x2</div>
+                            <div class="wf-lines" style="justify-content: center; width: 60px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                        </div>
+                        <div class="wf-lines">
+                            <div class="wf-line long"></div>
+                            <div class="wf-line long"></div>
+                            <div class="wf-line med"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Minimalist Creative</div>
+                    <div class="t-desc">Clean single-column white layout with offset 2x2 photo badge, generous margins, and subtle visual hierarchy.</div>
+                    <div class="t-photo-placement">Top-right floating 2x2 Photo with thin border</div>
+                    <div class="t-footer">
+                        <span class="t-target">Designers</span>
+                        <button class="btn-use" onclick="selectTemplate('template-minimal', this)">Use Template</button>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge technical">TECHNICAL</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="wf-photo">2x2</div>
+                            <div class="wf-lines" style="justify-content: center; width: 60px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                        </div>
+                        <div class="wf-lines">
+                            <div class="wf-line long"></div>
+                            <div class="wf-line long"></div>
+                            <div class="wf-line med"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Tech & Developer</div>
+                    <div class="t-desc">High-density 2-column format prioritizing technical skills, projects, and a framed 2x2 photo badge.</div>
+                    <div class="t-photo-placement">Left column 2x2 Photo card with tech badges</div>
+                    <div class="t-footer">
+                        <span class="t-target">Software Developers</span>
+                        <button class="btn-use" onclick="selectTemplate('template-technical', this)">Use Template</button>
+                    </div>
+                </div>
+                <!-- Card 5 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge modern">MODERN</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="wf-photo">2x2</div>
+                            <div class="wf-lines" style="justify-content: center; width: 60px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                        </div>
+                        <div class="wf-lines">
+                            <div class="wf-line long"></div>
+                            <div class="wf-line long"></div>
+                            <div class="wf-line med"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Elegant Dual-Tone</div>
+                    <div class="t-desc">Sophisticated header block with 2x2 photo overlay, modern section headers, and bullet alignment.</div>
+                    <div class="t-photo-placement">Banner header with overlapping 2x2 photo framing</div>
+                    <div class="t-footer">
+                        <span class="t-target">Project Managers</span>
+                        <button class="btn-use" onclick="selectTemplate('template-elegant', this)">Use Template</button>
+                    </div>
+                </div>
+                <!-- Card 6 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge dense">DENSE</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="wf-photo">2x2</div>
+                            <div class="wf-lines" style="justify-content: center; width: 60px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                        </div>
+                        <div class="wf-lines">
+                            <div class="wf-line long"></div>
+                            <div class="wf-line long"></div>
+                            <div class="wf-line med"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Compact One-Pager</div>
+                    <div class="t-desc">Maximizes page density for high experience content while maintaining a sharp, passport-style 2x2 photo.</div>
+                    <div class="t-photo-placement">Compact header-integrated 2x2 passport photo</div>
+                    <div class="t-footer">
+                        <span class="t-target">Experienced Professionals with extensive job history</span>
+                        <button class="btn-use" onclick="selectTemplate('template-compact', this)">Use Template</button>
+                    </div>
+                </div>
+                <!-- Card 7 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge creative">CREATIVE</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-direction: column;">
+                            <div class="wf-photo" style="border-radius: 50%;">2x2</div>
+                            <div class="wf-line long"></div>
+                        </div>
+                        <div class="wf-lines">
+                            <div class="wf-line long"></div>
+                            <div class="wf-line med"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Creative Portfolio</div>
+                    <div class="t-desc">Vibrant layout with dynamic project emphasis, playful layout, and circular 2x2 photo framing.</div>
+                    <div class="t-photo-placement">Centered circular 2x2 photo with bold accents</div>
+                    <div class="t-footer">
+                        <span class="t-target">Designers & Marketers</span>
+                        <button class="btn-use" onclick="selectTemplate('template-portfolio', this)">Use Template</button>
+                    </div>
+                </div>
+                <!-- Card 8 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge premium">PREMIUM</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div class="wf-lines" style="width: 70%; margin-top: 5px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                            <div class="wf-photo">2x2</div>
+                        </div>
+                        <div class="wf-lines" style="margin-top: 15px;">
+                            <div class="wf-line long"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Executive Serif</div>
+                    <div class="t-desc">Elegant serif typography, wide margins, and a sophisticated right-aligned 2x2 portrait.</div>
+                    <div class="t-photo-placement">Right-aligned integrated 2x2 photo</div>
+                    <div class="t-footer">
+                        <span class="t-target">Directors & C-Level</span>
+                        <button class="btn-use" onclick="selectTemplate('template-executive', this)">Use Template</button>
+                    </div>
+                </div>
+                <!-- Card 9 -->
+                <div class="template-card">
+                    <div class="template-card-header">
+                        <span class="t-badge bold">BOLD</span>
+                        <span class="t-included"><i class="fas fa-camera"></i> 2x2 Included</span>
+                    </div>
+                    <div class="wireframe-box">
+                        <div style="display: flex; gap: 10px;">
+                            <div class="wf-photo" style="border: 1px solid #fff; box-shadow: 2px 2px 0px #fff;">2x2</div>
+                            <div class="wf-lines" style="flex: 1; margin-top: 5px;">
+                                <div class="wf-line long"></div>
+                                <div class="wf-line med"></div>
+                            </div>
+                        </div>
+                        <div class="wf-lines" style="margin-top: 15px;">
+                            <div class="wf-line long"></div>
+                        </div>
+                    </div>
+                    <div class="t-title">Neo-Brutalism</div>
+                    <div class="t-desc">High-contrast, bold borders, distinct modular sections, and sharp 2x2 block framing.</div>
+                    <div class="t-photo-placement">Strict grid-aligned 2x2 block</div>
+                    <div class="t-footer">
+                        <span class="t-target">Startups & Innovators</span>
+                        <button class="btn-use" onclick="selectTemplate('template-neobrutalism', this)">Use Template</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'vantage_resume_persist_data_v2';
+
+        // Initial Data Structures
+        let experiences = [];
+        let education = [];
+        let skillCategories = [];
+        let projects = [];
+
+        // Tab switching logic
+        document.querySelectorAll('.tab-nav .tab-item').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab-nav .tab-item').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                
+                tab.classList.add('active');
+                const targetId = tab.getAttribute('data-tab');
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) targetPane.classList.add('active');
+
+                // Sync mobile sidebar icons
+                document.querySelectorAll('.sidebar-item').forEach(si => {
+                    si.classList.remove('active');
+                    if(si.getAttribute('data-tab') === targetId) si.classList.add('active');
+                });
+            });
+        });
+
+        // Mobile Sidebar Functions
+        function toggleMobileSidebar() {
+            document.getElementById('mobile-sidebar').classList.toggle('active');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+
+        function mobileTabClick(el) {
+            const target = el.getAttribute('data-tab');
+            const targetTab = document.querySelector(`.tab-nav .tab-item[data-tab="${target}"]`);
+            if(targetTab) targetTab.click();
+            toggleMobileSidebar();
+        }
+
+        // PERSISTENCE LOGIC
+        function saveToStorage() {
+            const paper = document.querySelector('.a4-paper');
+            const templateClass = Array.from(paper.classList).find(c => c.startsWith('template-')) || 'template-modern';
+
+            const staticData = {
+                name: document.getElementById('in-name').value,
+                role: document.getElementById('in-role').value,
+                email: document.getElementById('in-email').value,
+                phone: document.getElementById('in-phone').value,
+                location: document.getElementById('in-location').value,
+                web: document.getElementById('in-web').value,
+                linkedin: document.getElementById('in-linkedin').value,
+                github: document.getElementById('in-github').value,
+                summary: document.getElementById('in-summary').value,
+                photo: document.getElementById('res-photo').src,
+                photoTransform: document.getElementById('res-photo').style.transform,
+                photoRadius: document.getElementById('resume-photo-frame').style.borderRadius,
+                sectSum: document.getElementById('in-sect-sum') ? document.getElementById('in-sect-sum').value : 'Professional Summary',
+                sectExp: document.getElementById('in-sect-exp') ? document.getElementById('in-sect-exp').value : 'Work Experience',
+                sectEdu: document.getElementById('in-sect-edu') ? document.getElementById('in-sect-edu').value : 'Education',
+                sectProj: document.getElementById('in-sect-proj') ? document.getElementById('in-sect-proj').value : 'Key Projects',
+                template: templateClass
+            };
+
+            const fullState = { staticData, experiences, education, skillCategories, projects };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(fullState));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) {
+                // Default data if new session (Placeholders apply the exact way they do on Category)
+                experiences = [{ 
+                    id: 1, 
+                    customLabel: 'Position #1: Lead UI/UX Designer', 
+                    title: 'Lead UI/UX Designer', 
+                    company: 'Aura Digital Studio', 
+                    location: 'Los Angeles, CA', 
+                    start: '2021', 
+                    end: 'Present', 
+                    current: true, 
+                    bullets: [
+                        'Created comprehensive design system utilized across 12 product squads',
+                        'Architected accessible design tokens passing WCAG 2.1 AAA compliance',
+                        'Facilitated weekly design critique workshops and mentored junior product designers'
+                    ] 
+                }];
+                education = [{ id: 1, customLabel: 'B.S. in Computer Science', degree: 'B.S. in Computer Science', school: 'University of California, Berkeley', location: '', start: 'Sep 2013', end: 'May 2017', gpa: '3.88 / 4.0', honors: '' }];
+                projects = [{ id: 1, customLabel: 'Untitled Project', name: 'Untitled', role: '', url: '' }];
+                skillCategories = [
+                    { id: 1, name: 'Frontend & UI', tags: ['TypeScript / JavaScript', 'React / Next.js', 'Tailwind CSS / HTML5', 'State Management (Redux/Zustand)'] },
+                    { id: 2, name: 'Backend & Cloud', tags: ['Node.js / Express', 'PostgreSQL / Redis', 'Docker / AWS Services', 'GraphQL / REST APIs'] },
+                    { id: 3, name: 'Tools & Workflow', tags: ['Git / GitHub Actions', 'Agile / Scrum Leadership', 'Jest / Cypress / Playwright'] }
+                ];
+                renderExperience(); renderEducation(); renderSkills(); renderProjects(); update();
+                updateZoom(0); // Initialize zoom
+                return;
+            };
+
+            const data = JSON.parse(saved);
+            document.getElementById('in-name').value = data.staticData.name;
+            document.getElementById('in-role').value = data.staticData.role;
+            document.getElementById('in-email').value = data.staticData.email;
+            document.getElementById('in-phone').value = data.staticData.phone;
+            document.getElementById('in-location').value = data.staticData.location;
+            document.getElementById('in-web').value = data.staticData.web || 'alexandrachen.dev';
+            if (document.getElementById('in-linkedin')) document.getElementById('in-linkedin').value = data.staticData.linkedin || 'linkedin.com/in/alexandrachen-tech';
+            if (document.getElementById('in-github')) document.getElementById('in-github').value = data.staticData.github || 'github.com/alexandrachen';
+            document.getElementById('in-summary').value = data.staticData.summary;
+            
+            if(data.staticData.sectSum && document.getElementById('in-sect-sum')) document.getElementById('in-sect-sum').value = data.staticData.sectSum;
+            if(data.staticData.sectExp && document.getElementById('in-sect-exp')) document.getElementById('in-sect-exp').value = data.staticData.sectExp;
+            if(data.staticData.sectEdu && document.getElementById('in-sect-edu')) document.getElementById('in-sect-edu').value = data.staticData.sectEdu;
+            if(data.staticData.sectProj && document.getElementById('in-sect-proj')) document.getElementById('in-sect-proj').value = data.staticData.sectProj;
+            
+            const photoSrc = data.staticData.photo || "";
+            document.getElementById('res-photo').src = photoSrc;
+            document.getElementById('profile-preview').src = photoSrc;
+            document.getElementById('modal-preview-img').src = photoSrc;
+            document.getElementById('res-photo').style.transform = data.staticData.photoTransform;
+            document.getElementById('resume-photo-frame').style.borderRadius = data.staticData.photoRadius;
+
+            experiences = data.experiences || [];
+            education = data.education || [];
+            skillCategories = data.skillCategories || [];
+            projects = data.projects || [];
+
+            // Apply template
+            const paperClass = data.staticData.template || 'template-modern';
+            document.querySelector('.a4-paper').className = 'a4-paper ' + paperClass;
+            updateTemplateModalUI(paperClass);
+
+            renderExperience(); renderEducation(); renderSkills(); renderProjects(); update();
+            updateZoom(0); // Initialize zoom
+        }
+
+        // --- TEMPLATE LOGIC ---
+        function selectTemplate(templateClass, btnEl) {
+            document.querySelectorAll('.template-card').forEach(card => card.classList.remove('active'));
+            
+            if (btnEl) {
+                const card = btnEl.closest('.template-card');
+                card.classList.add('active');
+
+                document.querySelectorAll('.template-card button').forEach(btn => {
+                    btn.className = 'btn-use';
+                    btn.innerHTML = 'Use Template';
+                });
+
+                btnEl.className = 'btn-active';
+                btnEl.innerHTML = '<i class="fas fa-check"></i> Active Template';
+            }
+
+            const paper = document.querySelector('.a4-paper');
+            paper.className = 'a4-paper ' + templateClass;
+
+            saveToStorage();
+        }
+
+        function updateTemplateModalUI(templateClass) {
+            const btn = document.querySelector(`button[onclick*="${templateClass}"]`);
+            if (btn) {
+                document.querySelectorAll('.template-card').forEach(card => card.classList.remove('active'));
+                const card = btn.closest('.template-card');
+                if (card) card.classList.add('active');
+
+                document.querySelectorAll('.template-card button').forEach(b => {
+                    b.className = 'btn-use';
+                    b.innerHTML = 'Use Template';
+                });
+
+                btn.className = 'btn-active';
+                btn.innerHTML = '<i class="fas fa-check"></i> Active Template';
+            }
+        }
+
+        // --- DYNAMIC CARD FUNCTIONS WITH EDITABLE HEADERS ---
+
+        function addExperienceCard() {
+            const id = Date.now();
+            experiences.push({ id, customLabel: '', title: '', company: '', location: '', start: '', end: '', current: false, bullets: [''] });
+            renderExperience(); update();
+        }
+        
+        function renderExperience() {
+            const container = document.getElementById('experience-cards-container');
+            if(!container) return;
+            container.innerHTML = experiences.map((exp, idx) => `
+                <div class="experience-card">
+                    <div class="card-top-actions">
+                        <div class="card-label">
+                            <input class="header-edit-input" placeholder="Position #${idx + 1}: Experience Title" value="${exp.customLabel || `Position #${idx + 1}: ${exp.title || ''}`}" oninput="experiences.find(e => e.id === ${exp.id}).customLabel = this.value; update();" style="font-size: 14px; font-weight: 700; color: white;">
+                        </div>
+                        <div class="action-icons">
+                            <i class="fas fa-chevron-up"></i>
+                            <i class="fas fa-chevron-down"></i>
+                            <i class="fas fa-trash icon-delete" onclick="experiences = experiences.filter(e => e.id !== ${exp.id}); renderExperience(); update();"></i>
+                        </div>
+                    </div>
+                    <div class="input-grid">
+                        <div class="form-group"><label>Job Title</label><input type="text" value="${exp.title}" oninput="experiences.find(e => e.id===${exp.id}).title=this.value; update();"></div>
+                        <div class="form-group"><label>Company Name</label><input type="text" value="${exp.company}" oninput="experiences.find(e => e.id===${exp.id}).company=this.value; update();"></div>
+                        <div class="form-group"><label>Location</label><input type="text" value="${exp.location}" oninput="experiences.find(e => e.id===${exp.id}).location=this.value; update();"></div>
+                        <div class="form-group"><label>Start Date</label><input type="text" value="${exp.start}" oninput="experiences.find(e => e.id===${exp.id}).start=this.value; update();"></div>
+                        <div class="form-group"><label>End Date</label><input type="text" value="${exp.end}" ${exp.current ? 'disabled' : ''} oninput="experiences.find(e => e.id===${exp.id}).end=this.value; update();" placeholder="${exp.current ? 'Present' : ''}"></div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="current-work-${exp.id}" ${exp.current ? 'checked' : ''} onchange="toggleCurrentWork(${exp.id}, this.checked)">
+                        <label for="current-work-${exp.id}" style="font-size: 13px; font-weight: 500; color: white; cursor: pointer;">I currently work here</label>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:white; margin-top:20px;">
+                        <span>Key Responsibilities & Achievements</span>
+                        <span style="color:var(--accent-blue); cursor:pointer;" onclick="experiences.find(e => e.id===${exp.id}).bullets.push(''); renderExperience(); update();">+ Add Bullet</span>
+                    </div>
+                    
+                    <div class="action-verbs-container" style="display: flex; align-items: center; gap: 8px; margin-top: 10px; margin-bottom: 10px; font-size: 11px; color: var(--text-gray); flex-wrap: wrap;">
+                        <span>Action Verbs:</span>
+                        <button class="action-verb-btn" onclick="appendVerb(${exp.id}, 'Spearheaded')">+Spearheaded</button>
+                        <button class="action-verb-btn" onclick="appendVerb(${exp.id}, 'Architected')">+Architected</button>
+                        <button class="action-verb-btn" onclick="appendVerb(${exp.id}, 'Engineered')">+Engineered</button>
+                        <button class="action-verb-btn" onclick="appendVerb(${exp.id}, 'Optimized')">+Optimized</button>
+                        <button class="action-verb-btn" onclick="appendVerb(${exp.id}, 'Accelerated')">+Accelerated</button>
+                    </div>
+                    <div style="height: 1px; background: var(--border-color); margin-bottom: 15px; border-radius: 1px;"></div>
+
+                    <div>
+                        ${exp.bullets.map((b, bIdx) => `
+                            <div class="bullet-point-item" style="align-items: center;">
+                                <span class="bullet-marker" style="margin-top: 0;">•</span>
+                                <input type="text" class="bullet-input-box" style="min-height: auto; padding: 8px 12px;" value="${b}" oninput="experiences.find(e => e.id===${exp.id}).bullets[${bIdx}]=this.value; update();">
+                                <i class="fas fa-trash icon-delete" style="font-size:14px; margin-top:0;" onclick="experiences.find(e => e.id===${exp.id}).bullets.splice(${bIdx},1); renderExperience(); update();"></i>
+                            </div>`).join('')}
+                    </div>
+                </div>`).join('');
+        }
+
+        function appendVerb(expId, verb) {
+            const exp = experiences.find(e => e.id === expId);
+            if (exp.bullets.length > 0 && exp.bullets[exp.bullets.length - 1].trim() === '') {
+                exp.bullets[exp.bullets.length - 1] = verb + ' ';
+            } else {
+                exp.bullets.push(verb + ' ');
+            }
+            renderExperience();
+            update();
+        }
+
+        function toggleCurrentWork(id, isChecked) {
+            const exp = experiences.find(e => e.id === id);
+            exp.current = isChecked;
+            exp.end = isChecked ? 'Present' : '';
+            renderExperience(); update();
+        }
+
+        function addEducationCard() {
+            const id = Date.now();
+            education.push({ id, customLabel: '', degree: '', school: '', location: '', start: '', end: '', gpa: '', honors: '' });
+            renderEducation(); update();
+        }
+
+        function renderEducation() {
+            const container = document.getElementById('education-cards-container');
+            if(!container) return;
+            container.innerHTML = education.map((edu, idx) => `
+                <div class="data-card">
+                    <div class="card-top-actions">
+                        <div class="card-label">
+                            <i class="fas fa-graduation-cap"></i>
+                            <input class="header-edit-input" placeholder="Degree Title" value="${edu.customLabel}" oninput="education.find(e => e.id === ${edu.id}).customLabel = this.value; update();">
+                        </div>
+                        <div class="action-icons"><i class="fas fa-trash icon-delete" onclick="education = education.filter(e => e.id !== ${edu.id}); renderEducation(); update();"></i></div>
+                    </div>
+                    <div class="input-grid">
+                        <div class="form-group"><label>Degree / Major</label><input type="text" value="${edu.degree}" oninput="education.find(e => e.id===${edu.id}).degree=this.value; update();"></div>
+                        <div class="form-group"><label>Institution</label><input type="text" value="${edu.school}" oninput="education.find(e => e.id===${edu.id}).school=this.value; update();"></div>
+                        <div class="form-group"><label>Location</label><input type="text" value="${edu.location}" oninput="education.find(e => e.id===${edu.id}).location=this.value; update();"></div>
+                        <div class="form-group"><label>Start Date</label><input type="text" value="${edu.start}" oninput="education.find(e => e.id===${edu.id}).start=this.value; update();"></div>
+                        <div class="form-group"><label>End Date</label><input type="text" value="${edu.end}" oninput="education.find(e => e.id===${edu.id}).end=this.value; update();"></div>
+                        <div class="form-group"><label>GPA</label><input type="text" value="${edu.gpa || ''}" oninput="education.find(e => e.id===${edu.id}).gpa=this.value; update();"></div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function addSkillCategory() {
+            skillCategories.push({ id: Date.now(), name: '', tags: [''] });
+            renderSkills(); update();
+        }
+        function renderSkills() {
+            const container = document.getElementById('skill-categories-container');
+            if(!container) return;
+            container.innerHTML = skillCategories.map(cat => `
+                <div class="data-card">
+                    <div class="card-top-actions">
+                        <div class="card-label"><i class="fas fa-tag"></i> <input type="text" style="background:transparent; border:none; color:white; font-weight:700;" value="${cat.name}" placeholder="Category Name" oninput="skillCategories.find(s=>s.id===${cat.id}).name=this.value; update();"></div>
+                        <div class="action-icons"><i class="fas fa-trash icon-delete" onclick="skillCategories = skillCategories.filter(s=>s.id!==${cat.id}); renderSkills(); update();"></i></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
+                        <span>Skill Tags</span><span style="color:var(--accent-blue); cursor:pointer;" onclick="skillCategories.find(s=>s.id===${cat.id}).tags.push(''); renderSkills(); update();">+ Add Tag</span>
+                    </div>
+                    <div class="skill-tag-group">
+                        ${cat.tags.map((tag, i) => `
+                            <div class="skill-input-wrapper">
+                                <input type="text" value="${tag}" oninput="skillCategories.find(s=>s.id===${cat.id}).tags[${i}]=this.value; update();">
+                                <i class="fas fa-trash icon-delete" style="font-size:10px;" onclick="skillCategories.find(s=>s.id===${cat.id}).tags.splice(${i},1); renderSkills(); update();"></i>
+                            </div>`).join('')}
+                    </div>
+                </div>`).join('');
+        }
+
+        function addProjectCard() {
+            const id = Date.now();
+            projects.push({ id, customLabel: '', name: '', role: '', url: '', desc: '', tech: '' });
+            renderProjects(); update();
+        }
+        function renderProjects() {
+            const container = document.getElementById('projects-cards-container');
+            if(!container) return;
+            container.innerHTML = projects.map((p, idx) => `
+                <div class="data-card">
+                    <div class="card-top-actions">
+                        <div class="card-label">
+                            <i class="fas fa-folder"></i>
+                            <input class="header-edit-input" placeholder="Project Title" value="${p.customLabel}" oninput="projects.find(pr => pr.id === ${p.id}).customLabel = this.value; update();">
+                        </div>
+                        <div class="action-icons"><i class="fas fa-trash icon-delete" onclick="projects = projects.filter(pr => pr.id !== ${p.id}); renderProjects(); update();"></i></div>
+                    </div>
+                    <div class="input-grid">
+                        <div class="form-group"><label>Project Name</label><input type="text" value="${p.name}" oninput="projects.find(pr=>pr.id===${p.id}).name=this.value; update();"></div>
+                        <div class="form-group"><label>Your Role</label><input type="text" value="${p.role}" oninput="projects.find(pr=>pr.id===${p.id}).role=this.value; update();"></div>
+                        <div class="form-group full-width"><label>Link / URL</label><input type="text" value="${p.url}" oninput="projects.find(pr=>pr.id===${p.id}).url=this.value; update();"></div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function update() {
+            const ids = ['in-name','in-role','in-email','in-phone','in-location','in-web','in-linkedin','in-github','in-summary', 'in-sect-sum', 'in-sect-exp', 'in-sect-edu', 'in-sect-proj'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    if(id === 'in-name') { document.getElementById('res-name-side').innerText = el.value; document.getElementById('res-name-main').innerText = el.value; }
+                    else if(id === 'in-role') { document.getElementById('res-role-side').innerText = el.value; document.getElementById('res-role-main').innerText = el.value; }
+                    else { const t = document.getElementById(id.replace('in-', 'res-')); if(t) t.innerText = el.value; }
+                }
+            });
+
+            document.getElementById('prev-experience-list').innerHTML = experiences.map(e => `
+                <div class="preview-item">
+                    <div class="prev-item-header"><span>${e.title}</span><span>${e.start} - ${e.end}</span></div>
+                    <div class="prev-item-sub"><span>${e.company}</span><span>${e.location}</span></div>
+                    <ul class="prev-bullets">${e.bullets.filter(b=>b.trim()!=='').map(b=>`<li>${b}</li>`).join('')}</ul>
+                </div>`).join('');
+
+            document.getElementById('prev-education-list').innerHTML = education.map(e => `
+                <div class="preview-item">
+                    <div class="prev-item-header"><span>${e.degree}</span><span>${e.start} - ${e.end}</span></div>
+                    <div class="prev-item-sub"><span>${e.school}</span><span>${e.location}</span></div>
+                    ${e.gpa ? `<div style="font-size: 11px; color: #475569; margin-top: 2px;">GPA: ${e.gpa}</div>` : ''}
+                </div>`).join('');
+
+            document.getElementById('sidebar-skills-preview').innerHTML = skillCategories.map(cat => `
+                <div class="sidebar-section"><h3>${cat.name}</h3>
+                ${cat.tags.filter(t=>t.trim()!=='').map(t=>`<span class="skill-tag-pill">${t}</span>`).join('')}</div>`).join('');
+
+            document.getElementById('prev-projects-list').innerHTML = projects.map(p => `
+                <div class="preview-item"><div class="prev-item-header"><span>${p.name} (${p.role})</span></div></div>`).join('');
+
+            saveToStorage();
+        }
+
+        // PHOTO LOGIC
+        function switchPhotoTab(tabId, tabEl) {
+            const tabs = document.querySelectorAll('.photo-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            if(tabEl) tabEl.classList.add('active');
+
+            document.getElementById('tab-zoom-align').style.display = 'none';
+            document.getElementById('tab-avatar-presets').style.display = 'none';
+            document.getElementById('tab-upload-custom').style.display = 'none';
+
+            if (tabId === 'zoom-align') {
+                document.getElementById('tab-zoom-align').style.display = 'grid';
+            } else if (tabId === 'avatar-presets') {
+                document.getElementById('tab-avatar-presets').style.display = 'block';
+            } else if (tabId === 'upload-custom') {
+                document.getElementById('tab-upload-custom').style.display = 'block';
+            }
+        }
+
+        function selectPreset(card, url) {
+            document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            
+            document.getElementById('profile-preview').src = url; 
+            document.getElementById('res-photo').src = url;
+            document.getElementById('modal-preview-img').src = url;
+            
+            resetPhotoSettings();
+            saveToStorage();
+        }
+        
+        function loadCustomImageUrl(url) {
+            if (!url) return;
+            document.getElementById('profile-preview').src = url; 
+            document.getElementById('res-photo').src = url;
+            document.getElementById('modal-preview-img').src = url;
+            document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+            resetPhotoSettings();
+            saveToStorage();
+        }
+
+        function applyPhotoSettings() {
+            const zoom = document.getElementById('range-zoom').value;
+            const x = document.getElementById('range-x').value;
+            const y = document.getElementById('range-y').value;
+            document.getElementById('zoom-val').innerText = zoom + "%";
+            const transformStr = `scale(${zoom/100}) translate(${x}%, ${y}%)`;
+            document.getElementById('modal-preview-img').style.transform = transformStr;
+            document.getElementById('profile-preview').style.transform = transformStr;
+            document.getElementById('res-photo').style.transform = transformStr;
+            saveToStorage();
+        }
+
+        function setShape(radius, btn) {
+            document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('modal-crop-frame').style.borderRadius = radius;
+            document.getElementById('main-ui-photo-frame').style.borderRadius = radius;
+            document.getElementById('resume-photo-frame').style.borderRadius = radius;
+            saveToStorage();
+        }
+
+        function resetPhotoSettings() {
+            document.getElementById('range-zoom').value = 100;
+            document.getElementById('range-x').value = 0;
+            document.getElementById('range-y').value = 0;
+            const firstBtn = document.querySelector('.shape-btn');
+            setShape('0%', firstBtn);
+            applyPhotoSettings();
+        }
+
+        document.getElementById('imgInput').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = () => { 
+                const url = reader.result;
+                document.getElementById('profile-preview').src = url; 
+                document.getElementById('res-photo').src = url;
+                document.getElementById('modal-preview-img').src = url;
+                document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+                if (document.getElementById('custom-image-url')) {
+                     document.getElementById('custom-image-url').value = '';
+                }
+                resetPhotoSettings();
+                saveToStorage();
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // --- ZOOM & FULLSCREEN LOGIC ---
+        let currentZoom = 90; // Default zoom scale to start with
+
+        function updateZoom(delta) {
+            currentZoom += delta;
+            if (currentZoom < 30) currentZoom = 30; // Min scale
+            if (currentZoom > 200) currentZoom = 200; // Max scale
+            
+            // Update UI Labels
+            const topLabel = document.getElementById('zoom-percentage');
+            const innerLabel = document.getElementById('inner-zoom-percentage');
+            if (topLabel) topLabel.innerText = currentZoom + '%';
+            if (innerLabel) innerLabel.innerText = currentZoom + '%';
+            
+            // Apply Transform Scale
+            const paper = document.querySelector('.a4-paper');
+            if (paper) {
+                paper.style.transform = `scale(${currentZoom / 100})`;
+                paper.style.transformOrigin = 'top center';
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Toggle Fullscreen Icons dynamically based on event change
+        document.addEventListener('fullscreenchange', (event) => {
+            const fsIcon = document.getElementById('fs-icon');
+            if (document.fullscreenElement) {
+                if (fsIcon) {
+                    fsIcon.classList.remove('fa-expand-arrows-alt');
+                    fsIcon.classList.add('fa-compress-arrows-alt');
+                }
+            } else {
+                if (fsIcon) {
+                    fsIcon.classList.remove('fa-compress-arrows-alt');
+                    fsIcon.classList.add('fa-expand-arrows-alt');
+                }
+            }
+        });
+        
+        // --- EXPORT TO JPEG LOGIC ---
+        function exportToJPEG() {
+            const paper = document.querySelector('.a4-paper');
+            const originalTransform = paper.style.transform;
+            
+            // Temporarily reset zoom to capture full quality (100% scale)
+            paper.style.transform = 'scale(1)';
+            
+            // Small delay to allow browser to apply the transform before rendering
+            setTimeout(() => {
+                html2canvas(paper, { scale: 2, useCORS: true }).then(canvas => {
+                    // Restore original zoom
+                    paper.style.transform = originalTransform;
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const link = document.createElement('a');
+                    const userName = document.getElementById('in-name').value.replace(/\s+/g, '_') || 'Resume';
+                    link.download = `${userName}_Resume.jpg`;
+                    link.href = imgData;
+                    link.click();
+                    
+                    closeModal('exportModal');
+                }).catch(err => {
+                    console.error("Error generating JPEG:", err);
+                    paper.style.transform = originalTransform;
+                    alert("Failed to generate JPEG.");
+                });
+            }, 100);
+        }
+
+        window.onload = loadFromStorage;
+    </script>
+</body>
+</html>
